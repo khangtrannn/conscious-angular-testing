@@ -23,7 +23,7 @@ class TodosService {
   selector: 'app-todos',
   standalone: true,
   template: `
-    <div class="loading" *ngIf="loading">Loading...</div>
+    <div class="loading" *ngIf="isLoading">Loading...</div>
     <div *ngFor="let todo of todos" class="todo">
       {{todo.id}}
     </div>
@@ -42,7 +42,7 @@ class TodosComponent implements OnInit {
     this.#todosService.getAll().subscribe((todos) => {
       this.todos = todos;
       this.isLoading = false;
-    })
+    });
   }
 }
 
@@ -86,19 +86,21 @@ describe(TodosComponent.name, () => {
     expect(fixture.nativeElement.querySelector('.loading')).toEqual(0);
   });
 
-  it('should render todo list defer()', () => {
-    // jest.spyOn(todosServiceStub, 'getAll').mockImplementation(() => fakeAsyncResponse([{ id: 1 }]));
-    // component.ngOnInit();
-    component.isLoading = true;
-
+  it('should render todo list defer()', async () => {
+    jest.spyOn(todosServiceStub, 'getAll').mockImplementation(() => fakeAsyncResponse([{ id: 1 }]));
+    component.ngOnInit();
     fixture.detectChanges();
 
-    // const todos = fixture.nativeElement.querySelectorAll('.todo');
-    const loading = fixture.nativeElement.querySelector('.loading');
-
+    let loading = fixture.nativeElement.querySelector('.loading');
     expect(loading).not.toBeNull();
 
-    // await fixture.whenStable();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const todos = fixture.nativeElement.querySelectorAll('.todo');
+    loading = fixture.nativeElement.querySelector('.loading');
+    expect(loading).toBeNull();
+    expect(todos.length).toBe(1);
   });
 });
 
